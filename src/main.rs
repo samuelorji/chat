@@ -13,13 +13,13 @@ use tokio::{
 };
 use tokio_util::codec::{FramedRead, FramedWrite, LinesCodec, LinesCodecError};
 
-const HELP_MSG: &str = include_str!("help.txt");
+const HELP_MSG: &str = "he;;"; //include_str!("../help.txt");
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let server = TcpListener::bind("127.0.0.1:3000").await?;
 
-    let mut names = Arc::new(Mutex::new(HashSet::<String>::new()));
+    let names = Arc::new(Mutex::new(HashSet::<String>::new()));
 
     // create broadcast channel
     let (tx, _) = broadcast::channel::<String>(32);
@@ -89,16 +89,14 @@ async fn process_connection(
                                 drop(names_set);
                                 if not_exists {
                                     let new_user_name = user_name.to_string();
-                                   let message = format!("{} is now {}",&name, &new_user_name);
+                                    let message = format!("{} is now {}",&name, &new_user_name);
                                     broadcast_sender.send(message)?;
                                     name = new_user_name
 
                                 } else {
                                     writer.send(format!("name {} already exists", user_name)).await?;
                                 }
-
                              }
-
                             }
 
                     } else {
@@ -108,7 +106,7 @@ async fn process_connection(
 
                 }
             }
-                                        }
+          }
         }
             peer_msg = broadcast_receiver.recv() => {
                 if let Ok(msg) = peer_msg {
