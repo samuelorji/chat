@@ -13,7 +13,7 @@ use tokio::{
 };
 use tokio_util::codec::{FramedRead, FramedWrite, LinesCodec, LinesCodecError};
 
-const HELP_MSG: &str = "he;;"; //include_str!("../help.txt");
+const HELP_MSG: &str = include_str!("help.txt");
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -71,10 +71,10 @@ async fn process_connection(
 
             if let Some(Ok(mut msg)) = user_msg {
              match msg.as_str() {
-                r"\help" => {
+                r"/help" => {
                     writer.send(HELP_MSG).await?;
                 }
-                r"\quit" => {
+                r"/quit" => {
                     writer.send("Goodbye!!").await?;
                     break;
                 }
@@ -86,14 +86,17 @@ async fn process_connection(
                             {
                                 let mut names_set = names.lock().await;
                                 let not_exists = names_set.insert(user_name.to_string());
-                                drop(names_set);
                                 if not_exists {
+                                    names_set.remove(&name);
+                                    drop(names_set);
                                     let new_user_name = user_name.to_string();
                                     let message = format!("{} is now {}",&name, &new_user_name);
                                     broadcast_sender.send(message)?;
                                     name = new_user_name
 
+
                                 } else {
+                                    drop(names_set);
                                     writer.send(format!("name {} already exists", user_name)).await?;
                                 }
                              }
